@@ -1,51 +1,39 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import requests
 
-LOGGER = get_logger(__name__)
+# Define Giant Bomb API endpoint and your API key
+GIANT_BOMB_API_ENDPOINT = "https://www.giantbomb.com/api/games/"
+GIANT_BOMB_API_KEY = "7bafcf044a6e38697c4c19b5db7c2f8f085f8f87"  # Replace with your actual Giant Bomb API key
 
+# Function to fetch the top competitive games from Giant Bomb API
+def fetch_top_games():
+    params = {
+        'api_key': '7bafcf044a6e38697c4c19b5db7c2f8f085f8f87',
+        'format': 'json',
+        'field_list': 'name,site_detail_url',
+        'sort': 'original_release_date:desc',
+        'filter': 'genres:8',  # Adjust the genre filter as needed (8 corresponds to the 'esports' genre)
+        'limit': 10  # Adjust the limit as needed
+    }
+    response = requests.get(GIANT_BOMB_API_ENDPOINT + 'index/', params=params)
+    st.write(response)
+    data = response.json()
+    return data.get('results', [])
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+# Streamlit app
+def main():
+    st.title("Top Competitive Video Games")
 
-    st.write("# Welcome to Streamlit! 👋")
+    # Fetch top competitive games
+    top_games = fetch_top_games()
 
-    st.sidebar.success("Select a demo above.")
-
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
-
+    # Display the list of games
+    if top_games:
+        st.write("Here are some of the top competitive video games:")
+        for game in top_games:
+            st.write(f"[{game['name']}]({game['site_detail_url']})")
+    else:
+        st.write("No data available. Please check your API key and parameters.")
 
 if __name__ == "__main__":
-    run()
+    main()
